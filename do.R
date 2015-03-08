@@ -34,8 +34,8 @@ prac_test <- read.csv("prac_test.csv")
 library(randomForest)
 prac_train$label <- as.factor(prac_train$label)
 prac.rf <- randomForest(label ~ ., prac_train)
-table(prac_test$label, predict(prac.rf, newdata = prac_test[,-1]))
-sum(diag(table(prac_test$label,predict(prac.rf,newdata=prac_test[,-1]))))
+result_rc = table(prac_test$label, predict(prac.rf, newdata = prac_test[,-1]))
+sum(diag(result_rc))
 
 ## overcome the benchmark with h2o.deeplearning
 res.dl <- h2o.deeplearning(x = 2:785, y = 1, data = trData, activation = "Tanh", hidden=rep(160,5), epochs = 20)
@@ -86,4 +86,8 @@ ktsData <- h2o.importFile(localH2O, path = "test.csv")
 res.dl <- h2o.deeplearning(x = 2:785, y = 1, data = trData, activation = "RectifierWithDropout", hidden = c(1024, 1024,2048),epochs = 200, adaptive_rate = F, rate = .01, rate_annealing = 1.0e-6, rate_decay = 1.0, momentum_start = .5, momentum_ramp = 32000*12, momentum_stable = .99, input_dropout_ratio = .2, l1 = 1.0e-5, l2 = 0.0, max_w2 = 15.0, initial_weight_distribution = "Normal", initial_weight_scale = .01, nesterov_accelerated_gradient = T, loss = "CrossEntropy", fast_mode = T, diagnostics = T, force_load_balance = T)
 pred.dl <- h2o.predict(object = res.dl, newdata = ktsData)
 pred.dl.df <- as.data.frame(pred.dl)
-write.table(pred.dl.df[,1], file = 'output.csv', quote = F, col.names = F, row.names = F, sep = ',')
+
+## write.table(pred.dl.df[,1], file = 'output.csv', quote = F, col.names = c("Label"), row.names = T, sep = ',')
+ImageId <- 1:length(pred.dl.df[,1])
+Label <- pred.dl.df[,1]
+write.table(cbind(ImageId, Label) , file = "dl.csv", quote = F, col.names = T, row.names = F, sep = ',')
